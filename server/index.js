@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const { User } = require("./models/User");
 const { auth } = require('./middleware/auth');
 const cookieParser = require('cookie-parser');
-const config = require('./config/key');
+const config = require('../config/key');
 
 // application/x-www-form-urlencoded로 된 데이터를 분석해서 가지고 올 수 있게 해준다.
 app.use(bodyParser.urlencoded({ extended: true }));
