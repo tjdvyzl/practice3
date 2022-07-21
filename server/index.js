@@ -1,6 +1,5 @@
 const express = require('express');
 const app = express();
-const port = 5000;
 
 const bodyParser = require('body-parser');
 const { User } = require("./models/User");
@@ -21,6 +20,9 @@ mongoose.connect(config.mongoURI)
 
 app.get('/', (req, res) => { res.send('Hello World!@#!@#') });
 
+app.get('/api/hello', (req, res) => {
+    res.send("hi!");
+})
 
 /*
     회원 가입할 때 필요한 정보들을 client에서 가져오면 
@@ -37,7 +39,7 @@ app.post('/register', (req, res) => {
     }); // mongoDB에서 오는 메소드이다. 정보들이 유저 모델에 저장이 된다.
 })
 
-app.post('/login', (req, res) => {
+app.post('/api/users/login', (req, res) => {
     // 요청된 이메일을 데이터베이스에서 있는지 찾는다.
     User.findOne({ email: req.body.email }, (err, user) => {
         if (!user) {
@@ -102,6 +104,8 @@ app.get('/logout', auth, (req, res) => {
             })
     })
 })
+
+const port = 5000;
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
