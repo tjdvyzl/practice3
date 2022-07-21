@@ -15,8 +15,8 @@ const userSchema = mongoose.Schema({
         unique:1 // 똑같은 이메일을 쓸 수 없도록 설정
     },
     password: {
-        type: String,
-        minlength: 5
+        type: String
+        //minlength: 5
     },
     lastname: {
         type:String,
@@ -57,14 +57,12 @@ userSchema.pre('save', function (next) {
         // salt를 만들 때 saltRounds가 필요하다.
         // 그래서 밑에처럼 먼저 saltRounds를 먼저 넣고, 
         bcrypt.genSalt(saltRounds, function (err, salt) {
-            bcrypt.hash(myPlaintextPassword, salt, function (err, hash) {
+            if (err) return next(err)
+            
+            bcrypt.hash(user.password, salt, function (err, hash) {
                 if (err) return next(err)
-
-                bcrypt.hash(user.password, salt, function (err, hash) {
-                    if (err) return next(err)
-                    user.password = hash
-                    next()
-                })
+                user.password = hash
+                next();
             });
         });
     } else { // 변경된게 pw가 아니라 다른거라면 next함수를 호출시켜 user.save 코드로 보내준다.
@@ -72,7 +70,7 @@ userSchema.pre('save', function (next) {
     }
 })
 
-userSchema.methods.comparePaasword = (plainPassword, cb) => {
+userSchema.methods.comparePassword = (plainPassword, cb) => {
     // plainPassword 1234567    암호화된 비밀번호 !@#$
     // 위 plainpw를 암호화해서 비교를 해야함.
     bcrypt.compare(plainPassword, this.password, function (err, isMatch) {

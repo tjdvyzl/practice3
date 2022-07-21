@@ -28,14 +28,16 @@ app.get('/api/hello', (req, res) => {
     회원 가입할 때 필요한 정보들을 client에서 가져오면 
     그것들을 데이터 베이스에 넣어준다.
 */
-app.post('/register', (req, res) => {
+app.post('/api/users/register', (req, res) => {
     const user = new User(req.body);
 
     user.save((err, userInfo) => {
         // 저장을 할 때 에러가 있다면 클라이언트에다가 전달을 해주어야하는데 전달할 때 제이슨 형태로 전달해주고 에러 메세지도 보내준다.
-        if (err) return res.json({ success: false, err })
+        if (err)
+            return res.json({ success: false, err })
         // status(200)은 성공했다는 의미
-        return res.status(200).json({success:true})
+        else 
+            return res.status(200).json({success:true})
     }); // mongoDB에서 오는 메소드이다. 정보들이 유저 모델에 저장이 된다.
 })
 
@@ -48,26 +50,27 @@ app.post('/api/users/login', (req, res) => {
                 message: "제공된 이메일에 해당되는 유저가 없습니다."
             })
         }
+        else {
+            // 요청된 이메일이 데이터 베이스에 있다면 비밀번호가 맞는 비밀번호인지 확인
 
-        // 요청된 이메일이 데이터 베이스에 있다면 비밀번호가 맞는 비밀번호인지 확인
-
-        // comparePassword라는 메소드를 따로 만들자.
-        user.comparePassword(req.body.password, (err, isMatch) => {
-            if(!isMatch)
-                return res.json({loginSuccess: false, message: "비밀번호가 틀렸습니다."})
-    
-            
-            
-            // 비밀번호까지 맞다면 토큰을 생성하기.
-            user.generateToken((err, user) => {
-                if (err) return res.status(400).send(err);
-
-                // 토큰을 저장한다. 어디에 ? 쿠키, 로컬스토리지, 등등 여러가지가 있고 각기 장단점이 있음. 이 강의에선 쿠키로 함
-                res.cookie("x_auth", user.token) // x_auth라는 이름의 쿠키가 생성될것이
-                    .status(200)
-                    .json({loginSuccess: true, userId: user._id})
+            // comparePassword라는 메소드를 따로 만들자.
+            user.comparePassword(req.body.password, (err, isMatch) => {
+                if (!isMatch)
+                    return res.json({ loginSuccess: false, message: "비밀번호가 틀렸습니다." })
+                else {
+                    // 비밀번호까지 맞다면 토큰을 생성하기.
+                    user.generateToken((err, user) => {
+                        if (err) return res.status(400).send(err);
+                        else {
+                            // 토큰을 저장한다. 어디에 ? 쿠키, 로컬스토리지, 등등 여러가지가 있고 각기 장단점이 있음. 이 강의에선 쿠키로 함
+                            res.cookie("x_auth", user.token) // x_auth라는 이름의 쿠키가 생성될것이
+                                .status(200)
+                                .json({ loginSuccess: true, userId: user._id })
+                        }
+                    })
+                }
             })
-        })
+        }
     })
     
 })
@@ -76,10 +79,10 @@ app.post('/api/users/login', (req, res) => {
 // 중간에 auth는 미들웨어인데 미들웨어란?
 // 밑에 /auth의 엔드포인트에서 리퀘스트를 받은다음
 // 콜백함수를 중단시켜서 뭘 해주는 역할
-app.get('/auth', auth, (req, res) => {
+app.get('/api/users/auth', auth, (req, res) => {
     
     // 여기까지 미들웨어를 통과해 왔다는 얘기는 Authentication이 true 라는 말.
-    rese.status(200).json({
+    res.status(200).json({
         _id: req.user._id, // 이렇게 할 수 있는 이유는 auth파일에서 
         // user를 req에 넣었기 때문임.
         isAdmin: req.user.role === 0 ? false : true,
@@ -92,10 +95,10 @@ app.get('/auth', auth, (req, res) => {
     })
 })
 
-app.get('/logout', auth, (req, res) => {
+app.get('/api/users/logout', auth, (req, res) => {
     // 로그아웃 하려는 유저를 DB에서 찾아서 토큰을 없애준다.
 
-    user.findOneAndUpdate({ _id: req.user._id },
+    User.findOneAndUpdate({ _id: req.user._id },
         { token: "" },
         (err, user) => {
             if (err) return res.json({ success: false, err });
