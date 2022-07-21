@@ -3,6 +3,7 @@ import axios from 'axios'
 
 // LandingPage에 들어오자마자 밑의 useEffect를 실행한다.
 function LandingPage() {
+
     /*
         CORS 정책이 있는 이유는 다른 웹사이트에서 우리 서버에 뭘 보낼때 보안적인 이슈가 생기기 때문이다. cross origin resource sharing 
         5000번 포트와 3000번 포트는 각각 오리진이 있고 오리진이 다르다. 
@@ -16,9 +17,16 @@ function LandingPage() {
         axios.get('/api/hello')
         .then(response => console.log(response.data))
     }, [])
+
+    const onClickHandler = () => {
+        axios.get('api/users/logout')
+            .then(response => { console.log(response.data) })
+    }
+
     return (
         <div>
             LandingPage
+            <button onClick={onClickHandler}>로그아웃</button>
         </div>
     )
 }

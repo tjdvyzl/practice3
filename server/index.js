@@ -54,11 +54,9 @@ app.post('/api/users/login', (req, res) => {
             // 요청된 이메일이 데이터 베이스에 있다면 비밀번호가 맞는 비밀번호인지 확인
 
             // comparePassword라는 메소드를 따로 만들자.
-            user.comparePassword(req.body.password, (err, isMatch) => {
-                if (!isMatch)
-                    return res.json({ loginSuccess: false, message: "비밀번호가 틀렸습니다." })
-                else {
-                    // 비밀번호까지 맞다면 토큰을 생성하기.
+
+            user.temp(req.body.password, user, (isMatch) => {
+                if (isMatch) {
                     user.generateToken((err, user) => {
                         if (err) return res.status(400).send(err);
                         else {
@@ -69,7 +67,27 @@ app.post('/api/users/login', (req, res) => {
                         }
                     })
                 }
+                else {
+                    return res.json({ loginSuccess: false, message: "비밀번호가 틀렸습니다." + isMatch + pw })
+                }
             })
+
+            // user.comparePassword(req.body.password, (err, isMatch) => {
+            //     if (!isMatch)
+            //         return res.json({ loginSuccess: false, message: "비밀번호가 틀렸습니다." })
+            //     else {
+            //         // 비밀번호까지 맞다면 토큰을 생성하기.
+            //         user.generateToken((err, user) => {
+            //             if (err) return res.status(400).send(err);
+            //             else {
+            //                 // 토큰을 저장한다. 어디에 ? 쿠키, 로컬스토리지, 등등 여러가지가 있고 각기 장단점이 있음. 이 강의에선 쿠키로 함
+            //                 res.cookie("x_auth", user.token) // x_auth라는 이름의 쿠키가 생성될것이
+            //                     .status(200)
+            //                     .json({ loginSuccess: true, userId: user._id })
+            //             }
+            //         })
+            //     }
+            // })
         }
     })
     

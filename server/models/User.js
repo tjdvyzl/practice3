@@ -57,10 +57,10 @@ userSchema.pre('save', function (next) {
         // salt를 만들 때 saltRounds가 필요하다.
         // 그래서 밑에처럼 먼저 saltRounds를 먼저 넣고, 
         bcrypt.genSalt(saltRounds, function (err, salt) {
-            if (err) return next(err)
+            if (err) return next(err);
             
             bcrypt.hash(user.password, salt, function (err, hash) {
-                if (err) return next(err)
+                if (err) return next(err);
                 user.password = hash
                 next();
             });
@@ -73,10 +73,19 @@ userSchema.pre('save', function (next) {
 userSchema.methods.comparePassword = (plainPassword, cb) => {
     // plainPassword 1234567    암호화된 비밀번호 !@#$
     // 위 plainpw를 암호화해서 비교를 해야함.
+
+
     bcrypt.compare(plainPassword, this.password, function (err, isMatch) {
-        if (err) return cb(err),
+        if (err) return cb(err);
         cb(null, isMatch) // 만약 비밀번호가 같다면 err는 없고 isMatch는 true일 것임.
     })
+}
+
+userSchema.methods.temp = (plainPassword, user, cb) => {
+    if (plainPassword === user.password)
+        return cb(true);
+    else
+        return cb(false);
 }
 
 // https://www.npmjs.com/package/jsonwebtoken 
@@ -92,7 +101,7 @@ userSchema.methods.generateToken = function (cb) {
 
     user.token = token
     user.save(function (err, user) {
-        if (err) return cb(err)
+        if (err) return cb(err);
         cb(null, user)
     })
 }

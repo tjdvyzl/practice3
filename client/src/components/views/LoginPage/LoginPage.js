@@ -1,9 +1,12 @@
 import React, { useState } from 'react'
 import { useDispatch } from 'react-redux';
 import { loginUser } from "../../../_actions/user_action";
+import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
     const dispatch = useDispatch();
+
+    let navigate = useNavigate();
 
     const [Email, setEmail] = useState("");
     const [Password, setPassword] = useState("");
@@ -28,7 +31,15 @@ function LoginPage() {
         };
 
         // dispatch를 이용해서 action을 취한다
-        dispatch(loginUser(body));
+        dispatch(loginUser(body))
+            .then(response => {
+                if (response.payload.loginSuccess) {
+                    navigate("/");
+                }
+                else {
+                    alert("login fail");
+                }
+            })
 
     }
 
